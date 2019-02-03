@@ -14,7 +14,7 @@ raw_data <- googlesheets::gs_read(encuesta) %>%
 # a los transbordos, por ejemplo.
 # Para algunos casos (no todos), los nombres vienen con el sufijo _x, donde x es el número de la línea
 # en la que se encuentra la estación. Vamos a borrar esos sufijos y normalizar términos
-metro_stations <- readr::read_delim('data/estaciones-metro.csv', delim = ';') %>%
+metro_stations <- readr::read_delim('data/raw/estaciones-metro.csv', delim = ';') %>%
                   dplyr::mutate(stop_name = stringr::str_replace_all(stop_name, '_[0-9]+', ''),
                                 estacion = normalize_fields(stop_name),
                                 stop_desc = str_replace(stop_desc, 'Metro Línea', 'Metro'),
@@ -51,4 +51,4 @@ clean_data <- raw_data %>%
                             consecuencias_fisicas = consecuencias_fisicas_moretones_raspones_fracturas) %>%
               dplyr::mutate_if(is.logical, as.numeric)
 
-readr::write_delim(clean_data, 'data/encuesta_larga_clean.csv', delim = ';')
+readr::write_delim(clean_data, 'data/clean/encuesta_larga_clean.csv', delim = ';')

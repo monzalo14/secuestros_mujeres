@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(dplyr)
 library(readr)
 library(sf)
@@ -15,7 +16,7 @@ colonias <- sf::read_sf(path_colonias)
 find_polygon <- function(lon, lat, sp_polygon = colonias){
     # If any coordinate is missing, result is empty
     if(is.na(lon) | is.na(lat)) return('null_null_null_null')
-    # Check whether the point belongs to any of polygons.  
+    # Check whether the point belongs to any of polygons.
     which_row <- sf::st_contains(sp_polygon,
                                  sf::st_point(c(lon, lat)),
                                  sparse = FALSE)
@@ -30,7 +31,7 @@ find_polygon <- function(lon, lat, sp_polygon = colonias){
                             entidad_num = ENTIDAD,
                             municipio_num = MUNICIPIO,
                             cp = CP)
-    
+
     result <- `st_geometry<-`(result, NULL)
 
     if(nrow(result) > 1){
@@ -49,7 +50,7 @@ encuesta_colonias <- encuesta_clean %>%
                      tidyr::separate(point_spdata, into = colonias_vars, sep = '_') %>%
                      dplyr::mutate_at(vars(one_of(colonias_vars)), function(x) stringr::str_replace(x, 'null', '')) %>%
                      dplyr::mutate_all(function(x) tidyr::replace_na(x, ''))
-  
+
 # Write into spreadsheet
 googlesheets::gs_ws_new(encuesta, ws_title = 'respuestas_colonias', input = encuesta_colonias)
 #googlesheets::gs_edit_cells(encuesta, input = data_to_write, anchor = 'R1')
