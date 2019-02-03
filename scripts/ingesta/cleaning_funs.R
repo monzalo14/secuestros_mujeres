@@ -18,3 +18,5 @@ normalize_fields <- function(x){
   stringr::str_replace('ú', 'u') %>%
   stringr::str_replace_all(c(' '='_'))
 }
+
+
