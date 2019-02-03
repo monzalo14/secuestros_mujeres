@@ -17,23 +17,32 @@ raw_data <- googlesheets::gs_read(encuesta) %>%
 # en la que se encuentra la estación. Vamos a borrar esos sufijos y normalizar términos
 metro_stations <- readr::read_delim('data/estaciones-metro.csv', delim = ';') %>%
                   dplyr::select(stop_id, stop_name) %>%
-                  dplyr::mutate(stop_name_lc = stringr::str_replace_all(stop_name, '_[0-9]+', ''),
-                                stop_name_lc = normalize_fields(stop_name_lc))
+                  dplyr::mutate(stop_name_norm = stringr::str_replace_all(stop_name, '_[0-9]+', ''),
+                                stop_name_norm = normalize_fields(stop_name_norm))
 
 stations_regex <- metro_stations %>%
-                  pull(stop_name_lc) %>%
+                  pull(stop_name_norm) %>%
                   paste(., collapse='|')
 
 # Hacemos refactor y un poco de limpieza
+# Name standard:
+# _norm stands for "normalized" (no accents, spaces, or punctuation marks, all lowercase)
+# _l means it comes from variable "lugar_exacto",
+# _n means it comes from variable "narracion_de_los_hechos",
+# variable without suffix (en_metro, estacion, lugar_en_metro) is the union of both _l and _n
 clean_data <- raw_data %>%
-              dplyr::mutate(lugar_exacto_lc = normalize_fields(lugar_exacto),
-                            narracion_de_los_hechos_lc = normalize_fields(narracion_de_los_hechos),
-                            en_metro_lugar = grepl('metro|linea|estacion', lugar_exacto_lc),
-                            en_metro_descr = grepl('metro|linea|estacion', narracion_de_los_hechos_lc),
-                            en_metro = en_metro_lugar | en_metro_descr,
-                            estacion_lugar = str_extract(lugar_exacto_lc, stations_regex),
-                            estacion_descripcion = str_extract(narracion_de_los_hechos_lc, stations_regex),
-                            estacion = if_else(!is.na(estacion_lugar), estacion_lugar, estacion_descripcion),
+              dplyr::mutate(lugar_exacto_norm = normalize_fields(lugar_exacto),
+                            narracion_de_los_hechos_norm = normalize_fields(narracion_de_los_hechos),
+                            en_metro_l = grepl('metro|linea|estacion', lugar_exacto_norm),
+                            en_metro_n = grepl('metro|linea|estacion', narracion_de_los_hechos_norm),
+                            en_metro = en_metro_l | en_metro_n,
+                            estacion_l = str_extract(lugar_exacto_norm, stations_regex),
+                            estacion_n = str_extract(narracion_de_los_hechos_norm, stations_regex),
+                            estacion = if_else(!is.na(estacion_l), estacion_l, estacion_n),
+                            lugar_en_metro_l = str_extract(lugar_exacto_norm, 'dentro|fuera|anden|transbordo|vagon|taquilla'),
+                            lugar_en_metro_n = str_extract(narracion_de_los_hechos_norm, 'dentro|fuera|anden|transbordo|vagon|taquilla'),
+                            lugar_en_metro = if_else(!is.na(lugar_en_metro_l), lugar_en_metro_l, lugar_en_metro_n),
+                            lugar_en_metro = str_replace(lugar_en_metro, 'anden|vagon|taquilla', 'dentro'),
                             fuente = 'encuesta_larga')
 
 readr::write_delim(clean_data, 'data/encuesta_larga_clean.csv', delim = ';')

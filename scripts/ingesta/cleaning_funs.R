@@ -3,6 +3,7 @@ library(stringr)
 clean_headers <- function(data){
  # Reemplaza puntuación, acentos y espacios de los headers de los datos 
   new_names <- names(data) %>% normalize_fields()
+  
   data %>%
   setNames(., nm = new_names)
 }
