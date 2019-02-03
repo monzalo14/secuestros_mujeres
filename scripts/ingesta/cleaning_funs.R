@@ -11,13 +11,14 @@ clean_headers <- function(data){
 normalize_fields <- function(x){
  # Limpia los campos para buscar palabras clave y crear nuevas variables
   stringr::str_to_lower(x) %>%
+  stringr::str_replace(' / ', ' ') %>%
   stringr::str_replace_all('[[:punct:]]', '') %>%
-  stringr::str_replace('á', 'a') %>%
-  stringr::str_replace('é', 'e') %>%
-  stringr::str_replace('í', 'i') %>%
-  stringr::str_replace('ó', 'o') %>%
-  stringr::str_replace('ú', 'u') %>%
-  stringr::str_replace_all(c(' '='_'))
+  stringr::str_replace_all(c('á' = 'a')) %>%
+  stringr::str_replace_all(c('é' = 'e')) %>%
+  stringr::str_replace_all(c('í' = 'i')) %>%
+  stringr::str_replace_all(c('ó' = 'o')) %>%
+  stringr::str_replace_all(c('ú' = 'u')) %>%
+  stringr::str_replace_all(c(' ' = '_'))
 }
 
 

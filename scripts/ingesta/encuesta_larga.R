@@ -7,7 +7,6 @@ library(readr)
 encuesta <- googlesheets::gs_url('https://docs.google.com/spreadsheets/d/1QCpVh4dbpV6DfiZoKKOQ7hDhs-qVwffgpAYsBq3uZR4/edit?ts=5c5242fc#gid=0')
 raw_data <- googlesheets::gs_read(encuesta) %>%
             clean_headers() %>%
-            dplyr::mutate(id = row_number()) %>%
             dplyr::filter(!(is.na(timestamp) & is.na(narracion_de_los_hechos)))
 
 # Leemos los datos del metro.
@@ -16,15 +15,17 @@ raw_data <- googlesheets::gs_read(encuesta) %>%
 # Para algunos casos (no todos), los nombres vienen con el sufijo _x, donde x es el número de la línea
 # en la que se encuentra la estación. Vamos a borrar esos sufijos y normalizar términos
 metro_stations <- readr::read_delim('data/estaciones-metro.csv', delim = ';') %>%
-                  dplyr::select(stop_id, stop_name) %>%
-                  dplyr::mutate(stop_name_norm = stringr::str_replace_all(stop_name, '_[0-9]+', ''),
-                                stop_name_norm = normalize_fields(stop_name_norm))
+                  dplyr::mutate(stop_name = stringr::str_replace_all(stop_name, '_[0-9]+', ''),
+                                estacion = normalize_fields(stop_name),
+                                stop_desc = str_replace(stop_desc, 'Metro Línea', 'Metro'),
+                                linea = str_extract(stop_desc, '(?<=(Metro)\\s)\\w+')) %>%
+                  dplyr::distinct(estacion, .keep_all = TRUE)
 
 stations_regex <- metro_stations %>%
-                  pull(stop_name_norm) %>%
+                  pull(estacion) %>%
                   paste(., collapse='|')
 
-# Hacemos refactor y un poco de limpieza
+# Hacemos un poco de limpieza (falta un refactor)
 # Name standard:
 # _norm stands for "normalized" (no accents, spaces, or punctuation marks, all lowercase)
 # _l means it comes from variable "lugar_exacto",
@@ -43,6 +44,11 @@ clean_data <- raw_data %>%
                             lugar_en_metro_n = str_extract(narracion_de_los_hechos_norm, 'dentro|fuera|anden|transbordo|vagon|taquilla'),
                             lugar_en_metro = if_else(!is.na(lugar_en_metro_l), lugar_en_metro_l, lugar_en_metro_n),
                             lugar_en_metro = str_replace(lugar_en_metro, 'anden|vagon|taquilla', 'dentro'),
-                            fuente = 'encuesta_larga')
+                            fuente = 'encuesta_larga') %>%
+              dplyr::mutate_if(is.character, function(x) str_replace_all(x, "[\r\n]" , "")) %>%
+              dplyr::select(-ends_with('_l'), -ends_with('_n'), -ping) %>%
+              dplyr::rename(fecha = fecha_del_incidente, hora_aproximada = hora_del_incidente,
+                            consecuencias_fisicas = consecuencias_fisicas_moretones_raspones_fracturas) %>%
+              dplyr::mutate_if(is.logical, as.numeric)
 
 readr::write_delim(clean_data, 'data/encuesta_larga_clean.csv', delim = ';')
