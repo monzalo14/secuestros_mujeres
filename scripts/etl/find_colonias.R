@@ -4,15 +4,17 @@ library(readr)
 library(sf)
 library(tidyr)
 
-encuesta_clean <- readr::read_csv('data/encuesta_clean.csv', sep = '|')
+encuesta_clean <- readr::read_delim('data/clean/secuestros_mujeres.csv', delim = ';')
 
 # Define path for colonias data
-path_colonias <- 'data/colonias_wgs84.shp'
+path_colonias <- 'data/raw/colonias_wgs84/colonias_wgs84.shp'
 
 # Leemos los datos de las colonias (fuente: ADIP)
 colonias <- sf::read_sf(path_colonias)
 
-# Find if pair of (lon, lat) points belong to a polygon
+# Find if pair of (lon, lat) points belong to a polygon, with ugly hack to get
+# all interesting variables at once (sorry)
+colonias_vars <- c('colonia_nombre', 'entidad_num', 'municipio_num', 'cp')
 find_polygon <- function(lon, lat, sp_polygon = colonias){
     # If any coordinate is missing, result is empty
     if(is.na(lon) | is.na(lat)) return('null_null_null_null')
@@ -46,11 +48,19 @@ find_polygon <- function(lon, lat, sp_polygon = colonias){
 # Find spatial data for all points
 encuesta_colonias <- encuesta_clean %>%
                      dplyr::rowwise() %>%
-                     dplyr::mutate(point_spdata = find_polygon(Longitud, Latitud)) %>%
+                     dplyr::mutate(point_spdata = find_polygon(longitud, latitud)) %>%
                      tidyr::separate(point_spdata, into = colonias_vars, sep = '_') %>%
-                     dplyr::mutate_at(vars(one_of(colonias_vars)), function(x) stringr::str_replace(x, 'null', '')) %>%
+                     dplyr::mutate_at(vars(one_of(colonias_vars)),
+                                      function(x) stringr::str_replace(x, 'null', '')) %>%
                      dplyr::mutate_all(function(x) tidyr::replace_na(x, ''))
 
-# Write into spreadsheet
-googlesheets::gs_ws_new(encuesta, ws_title = 'respuestas_colonias', input = encuesta_colonias)
-#googlesheets::gs_edit_cells(encuesta, input = data_to_write, anchor = 'R1')
+# Write into spreadsheet for quick map
+encuesta <- googlesheets::gs_url('https://docs.google.com/spreadsheets/d/1QCpVh4dbpV6DfiZoKKOQ7hDhs-qVwffgpAYsBq3uZR4/edit?ts=5c5242fc#gid=0')
+googlesheets::gs_ws_new(encuesta, ws_title = 'respuestas_colonias_clean',
+                        input = encuesta_colonias)
+
+# Write csv file
+readr::write_delim(encuesta_colonias,
+                   path = 'data/clean/secuestros_mujeres_colonias.csv',
+                   delim = ';', na = '')
+

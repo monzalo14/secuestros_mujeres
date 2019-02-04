@@ -4,6 +4,8 @@ library(googlesheets)
 library(readr)
 library(stringr)
 
+source('scripts/ingesta/cleaning_funs.R')
+
 # Leemos los datos de la encuesta
 encuesta_c <- googlesheets::gs_url('https://docs.google.com/spreadsheets/d/1Pxxzrw7zJ1a3l6Y0kb9Z3A09nYuoRQEbbNaKvHovPbU/edit#gid=406101006')
 raw_data_c <- googlesheets::gs_read(encuesta_c)
@@ -28,4 +30,4 @@ clean_data_c <- raw_data_c %>%
                 dplyr::left_join(metro_stations) %>%
                 dplyr::select(fecha, hora_aproximada, modalidad:longitud)
 
-readr::write_delim(clean_data_c, 'data/clean/encuesta_corta_clean.csv', delim = ';')
+readr::write_delim(clean_data_c, 'data/clean/encuesta_corta.csv', delim = ';')

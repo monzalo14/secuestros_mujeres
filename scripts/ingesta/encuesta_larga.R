@@ -3,6 +3,8 @@ library(dplyr)
 library(googlesheets)
 library(readr)
 
+source('scripts/ingesta/cleaning_funs.R')
+
 # Leemos los datos de la encuesta
 encuesta <- googlesheets::gs_url('https://docs.google.com/spreadsheets/d/1QCpVh4dbpV6DfiZoKKOQ7hDhs-qVwffgpAYsBq3uZR4/edit?ts=5c5242fc#gid=0')
 raw_data <- googlesheets::gs_read(encuesta) %>%
@@ -51,4 +53,4 @@ clean_data <- raw_data %>%
                             consecuencias_fisicas = consecuencias_fisicas_moretones_raspones_fracturas) %>%
               dplyr::mutate_if(is.logical, as.numeric)
 
-readr::write_delim(clean_data, 'data/clean/encuesta_larga_clean.csv', delim = ';')
+readr::write_delim(clean_data, 'data/clean/encuesta_larga.csv', delim = ';', na = '')
