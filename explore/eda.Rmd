@@ -1,0 +1,83 @@
+---
+title: "Análisis exploratorio de secuestros de mujeres"
+author: "Mónica Zamudio"
+date: "2/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(lubridate)
+library(readr)
+library(tidyr)
+
+df <- readr::read_delim('data/clean/secuestros_mujeres_colonias.csv', delim = ';')
+```
+
+El análisis se hizo sobre el total de `r nrow(df)` casos. Cualquier filtro aplicado se especifica conforme corresponda.
+
+Proporción de casos del metro
+```{r}
+df %>%
+  count(en_metro) %>%
+  mutate(n = n*100/sum(n)) %>%
+  kable(align = 'l')
+```
+
+### Casos (que sabemos) que ocurrieron en el metro
+```{r}
+df_metro <- df %>% filter(en_metro == 1)
+```
+
+¿Para cuántos conocemos la estación?
+```{r}
+df_metro %>%
+  count(conocemos_estacion = !is.na(estacion)) %>%
+  mutate(n = n*100/sum(n)) %>%
+  kable(align = 'l')
+```
+
+Para los que conocemos su estación, ¿cuáles estaciones tienen más siniestros?
+```{r}
+df_metro %>%
+  filter(!is.na(estacion)) %>%
+  count(estacion) %>%
+  arrange(desc(n)) %>%
+  ggplot(aes(estacion, n)) +
+  geom_bar(stat = 'identity') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, size = 8))
+```
+
+¿Dónde ocurrió el incidente?
+```{r}
+df_metro %>%
+  count(lugar_en_metro) %>%
+  mutate(n = n*100/sum(n)) %>%
+  kable(align = 'l')
+```
+
+¿En qué línea ocurrieron más incidentes?
+```{r}
+df_metro %>%
+  count(linea) %>%
+  mutate(n = n*100/sum(n)) %>%
+  arrange(desc(n)) %>%
+  kable(align = 'l')
+```
+
+### Casos en general
+¿Ha habido un incremento reciente de casos?
+```{r}
+df %>%
+  count(y = year(mdy(fecha)), en_metro = factor(en_metro)) %>%
+  filter(y > 2015) %>%
+  ggplot(aes(y, n, group = en_metro, color = en_metro)) +
+  geom_line() +
+  theme_minimal()
+```
+
+

@@ -1,0 +1,23 @@
+variable;description
+fecha;Fecha del incidente
+hora_aproximada;Hora aproximada del incidente
+narracion_de_los_hechos;Hechos ocurridos en el incidente
+lugar_en_metro;Lugar en el metro en el que sucedió el incidente: adentro (taquilla/andén)vagones), en un transbordo o afuera del metro
+en_metro;Dummy: el incidente sucedió en las inmediaciones del metro
+fuente;Fuente del registro (encuesta_larga: formulario de Serendipia, encuesta_corta: formulario del otro colectivo)
+estacion;Estación del metro en el que sucedió el incidente
+linea;Línea del metro en el que sucedió el incidente
+latitud;Latitud del lugar en el que sucedió el incidente
+longitud;Longitud del lugar en el que sucedió el incidente
+lugar_exacto;Descripción del lugar en el que sucedió el incidente
+numero_agresores;Número de agresores que perpetraron el siniestro
+consecuencias_fisicas;Consecuencias físicas en el cuerpo de la víctima
+denuncia_en_mp;Dummy: la víctima denunció ante el MP
+procedio_la_denuncia;Dummy: la denuncia interpuesta por la víctima procedió
+si_procedio_con_que_delito;Delito con el cual procedió la denuncia ante el MP
+si_no_procedio_que_razones_dieron;Si el delito no procedió, razones que dieron para que no procediera
+mp;Ministerio Público ante el que se interpuso la denuncia
+colonia_nombre;Nombre de la colonia en la que sucedió el incidente
+entidad_num;Clave numérica de la entidad en la que sucedió el incidente
+municipio_num;Clave numérica del municipio en el que sucedió el incidente
+cp;Código postal en el que sucedió el incidente
