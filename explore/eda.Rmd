@@ -14,7 +14,7 @@ library(lubridate)
 library(readr)
 library(tidyr)
 
-df <- readr::read_delim('data/clean/secuestros_mujeres_colonias.csv', delim = ';')
+df <- readr::read_delim('../data/clean/secuestros_mujeres_colonias.csv', delim = ';')
 ```
 
 El análisis se hizo sobre el total de `r nrow(df)` casos. Cualquier filtro aplicado se especifica conforme corresponda.
@@ -70,7 +70,7 @@ df_metro %>%
 ```
 
 ### Casos en general
-¿Ha habido un incremento reciente de casos?
+¿De qué periodo nos llegaron reportes?
 ```{r}
 df %>%
   count(y = year(mdy(fecha)), en_metro = factor(en_metro)) %>%
